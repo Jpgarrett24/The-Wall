@@ -1,0 +1,63 @@
+@model Wrapper
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="~/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>CodingDojo Wall</h1>
+        <h3>Welcome @Model.User.FirstName!</h3>
+        <a href="logout">Log Off</a>
+    </header>
+    <main>
+        <section>
+            <form asp-action="CreatePost" asp-controller="Home" method="POST">
+                <span asp-validation-for="Post.Message"></span>
+                <label asp-for="Post.Message"></label>
+                <input asp-for="Post.Message">
+                <button>Post a message!</button>
+            </form>
+        </section>
+        <section>
+            @foreach (Post post in Model.AllPosts)
+            {
+                <h3>@post.Creator.FirstName @post.Creator.LastName - @post.CreatedAt.ToString("MMMM d, yyyy")</h3>
+                <p>@post.Message</p>
+                if (post.UserId == Model.User.UserId && post.CreatedAt > DateTime.Now.AddMinutes(-30))
+                {
+                    <form asp-action="DeletePost" asp-controller="Home" method="POST">
+                        <input type="hidden" name="postID" id="postID" value="@post.PostId">
+                        <button>Delete</button>
+                    </form>
+                }
+                <section class="comment">
+                    @foreach (Comment comment in post.Comments)
+                    {
+                        <h4>@comment.Creator.FirstName @comment.Creator.LastName - @comment.CreatedAt.ToString("MMMM d, yyyy")</h4>
+                        <p>@comment.Message</p>
+                        @if (comment.UserId == Model.User.UserId && comment.CreatedAt > DateTime.Now.AddMinutes(-30))
+                        {
+                            <form asp-action="DeleteComment" asp-controller="Home" method="POST">
+                                <input type="hidden" name="commentID" id="commentID" value="@comment.CommentId">
+                                <button>Delete</button>
+                            </form>
+                        }
+                    }
+                    <form asp-action="CreateComment" asp-controller="Home" method="POST">
+                        <span asp-validation-for="Comment.Message"></span>
+                        <label asp-for="Comment.Message"></label>
+                        <input asp-for="Comment.Message">
+                        <input asp-for="Comment.UserId" value="@Model.User.UserId">
+                        <input asp-for="Comment.PostId" value="@post.PostId">
+                        <button>Post a Comment!</button>
+                    </form>
+                </section>
+            }
+        </section>
+    </main>
+</body>
+</html>
